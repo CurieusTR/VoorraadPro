@@ -1,0 +1,5 @@
+export { StatsCards } from './stats-cards'
+export { LowStockAlerts } from './low-stock-alerts'
+export { ExpiringProducts } from './expiring-products'
+export { RecentMovements } from './recent-movements'
+export { QuickActions } from './quick-actions'
