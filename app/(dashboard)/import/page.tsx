@@ -85,7 +85,7 @@ export default function ImportPage() {
 
       // Get or create categories
       const categoryMap = new Map<string, string>()
-      const uniqueCategories = [...new Set(preview.map(r => r.category).filter(Boolean))]
+      const uniqueCategories = [...new Set(preview.map(r => r.category).filter((c): c is string => Boolean(c)))]
 
       for (const catName of uniqueCategories) {
         // Check if exists
@@ -96,7 +96,7 @@ export default function ImportPage() {
           .single()
 
         if (existing) {
-          categoryMap.set(catName!, existing.id)
+          categoryMap.set(catName, existing.id)
         } else {
           // Create category
           const { data: newCat } = await (supabase as any)
@@ -105,7 +105,7 @@ export default function ImportPage() {
             .select()
             .single()
 
-          if (newCat) categoryMap.set(catName!, newCat.id)
+          if (newCat) categoryMap.set(catName, newCat.id)
         }
       }
 
