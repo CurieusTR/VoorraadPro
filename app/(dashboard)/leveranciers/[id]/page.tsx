@@ -33,7 +33,7 @@ export default function LeverancierDetailPage() {
   useEffect(() => {
     const fetchSupplier = async () => {
       try {
-        const supabase = createClient()
+        const supabase = createClient() as any
         const { data, error } = await supabase
           .from('suppliers')
           .select('*')
@@ -43,17 +43,17 @@ export default function LeverancierDetailPage() {
         if (error) throw error
 
         setFormData({
-          name: data.name || '',
-          contact_person: data.contact_person || '',
-          email: data.email || '',
-          phone: data.phone || '',
-          whatsapp: data.whatsapp || '',
-          address: data.address || '',
-          city: data.city || '',
-          postal_code: data.postal_code || '',
-          btw_nummer: data.btw_nummer || '',
-          payment_terms: String(data.payment_terms || 30),
-          notes: data.notes || '',
+          name: data?.name || '',
+          contact_person: data?.contact_person || '',
+          email: data?.email || '',
+          phone: data?.phone || '',
+          whatsapp: data?.whatsapp || '',
+          address: data?.address || '',
+          city: data?.city || '',
+          postal_code: data?.postal_code || '',
+          btw_nummer: data?.btw_nummer || '',
+          payment_terms: String(data?.payment_terms || 30),
+          notes: data?.notes || '',
         })
       } catch (err) {
         toast.error('Leverancier niet gevonden')

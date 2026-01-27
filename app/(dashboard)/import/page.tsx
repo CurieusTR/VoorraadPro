@@ -81,7 +81,7 @@ export default function ImportPage() {
 
     setImporting(true)
     try {
-      const supabase = createClient()
+      const supabase = createClient() as any
 
       // Get or create categories
       const categoryMap = new Map<string, string>()
@@ -95,17 +95,17 @@ export default function ImportPage() {
           .eq('name', catName)
           .single()
 
-        if (existing) {
+        if (existing && existing.id) {
           categoryMap.set(catName, existing.id)
         } else {
           // Create category
-          const { data: newCat } = await (supabase as any)
+          const { data: newCat } = await supabase
             .from('categories')
             .insert({ name: catName, user_id: user.id })
             .select()
             .single()
 
-          if (newCat) categoryMap.set(catName, newCat.id)
+          if (newCat && newCat.id) categoryMap.set(catName, newCat.id)
         }
       }
 
@@ -122,7 +122,7 @@ export default function ImportPage() {
         user_id: user.id,
       }))
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('products')
         .insert(products)
 
