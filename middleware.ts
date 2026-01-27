@@ -42,9 +42,10 @@ export async function middleware(request: NextRequest) {
   // Public routes that don't require authentication
   const publicRoutes = ['/login', '/register', '/reset-password']
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
+  const isLandingPage = pathname === '/'
 
-  // If user is not logged in and trying to access protected route
-  if (!user && !isPublicRoute) {
+  // If user is not logged in and trying to access protected route (not landing page, not public auth routes)
+  if (!user && !isPublicRoute && !isLandingPage) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('redirect', pathname)
@@ -54,7 +55,7 @@ export async function middleware(request: NextRequest) {
   // If user is logged in and trying to access auth pages, redirect to dashboard
   if (user && isPublicRoute) {
     const url = request.nextUrl.clone()
-    url.pathname = '/'
+    url.pathname = '/producten'
     return NextResponse.redirect(url)
   }
 
