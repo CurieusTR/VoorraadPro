@@ -23,7 +23,8 @@ export function useSuppliers() {
 
     try {
       const supabase = createClient()
-      const { data, error: queryError } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error: queryError } = await (supabase as any)
         .from('suppliers')
         .select('id, name, contact_person, email, phone, is_active')
         .eq('is_active', true)

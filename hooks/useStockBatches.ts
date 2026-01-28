@@ -51,7 +51,8 @@ export function useStockBatches(productId?: string) {
 
     try {
       const supabase = createClient()
-      const { data, error: queryError } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error: queryError } = await (supabase as any)
         .from('stock_batches')
         .select(`
           *,
@@ -94,7 +95,8 @@ export function useStockBatchMutations() {
     try {
       const supabase = createClient()
 
-      const { data: batch, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: batch, error } = await (supabase as any)
         .from('stock_batches')
         .insert({
           ...data,
@@ -132,7 +134,8 @@ export function useStockBatchMutations() {
       const supabase = createClient()
 
       // Get batches ordered by FIFO (oldest first by expiry, then by purchase date)
-      const { data: batches, error: fetchError } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: batches, error: fetchError } = await (supabase as any)
         .from('stock_batches')
         .select('*')
         .eq('product_id', productId)
@@ -158,7 +161,8 @@ export function useStockBatchMutations() {
         const newQuantity = batch.quantity - quantityFromBatch
 
         // Update batch quantity
-        const { error: updateError } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: updateError } = await (supabase as any)
           .from('stock_batches')
           .update({
             quantity: newQuantity,
@@ -195,7 +199,8 @@ export function useStockBatchMutations() {
     try {
       const supabase = createClient()
 
-      const { data: batch, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: batch, error } = await (supabase as any)
         .from('stock_batches')
         .update({
           ...data,
