@@ -60,7 +60,7 @@ export function BatchList({ productId, productName, productUnit = 'stuk' }: Batc
           <CardTitle className="text-base">
             Batch overzicht {productName && `- ${productName}`}
           </CardTitle>
-          <Badge variant="secondary">
+          <Badge variant="default">
             Totaal: {totalQuantity} {productUnit}
           </Badge>
         </div>
@@ -136,10 +136,10 @@ export function BatchList({ productId, productName, productUnit = 'stuk' }: Batc
                       <Badge
                         variant={
                           expiryStatus === 'critical'
-                            ? 'destructive'
+                            ? 'error'
                             : expiryStatus === 'warning'
                             ? 'warning'
-                            : 'secondary'
+                            : 'default'
                         }
                       >
                         {expiryStatus === 'critical' ? (
