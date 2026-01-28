@@ -16,7 +16,7 @@ import {
   CardTitle,
   CardContent,
 } from '@/components/ui'
-import { useStockMutations, useProducts } from '@/hooks'
+import { useStockMutations, useProducts, useSuppliers, useStockBatchMutations } from '@/hooks'
 import { UNITS, MOVEMENT_TYPE_LABELS, type MovementType } from '@/lib/supabase/types'
 import { toast } from 'sonner'
 
@@ -34,6 +34,7 @@ const movementSchema = z.object({
   quantity: z.coerce.number().positive('Hoeveelheid moet positief zijn'),
   unit: z.string().min(1, 'Eenheid is verplicht'),
   unit_price: z.coerce.number().min(0).optional().nullable(),
+  supplier_id: z.string().optional().nullable(),
   expiry_date: z.string().optional().nullable(),
   batch_number: z.string().optional().nullable(),
   reference: z.string().optional().nullable(),
@@ -65,6 +66,8 @@ export function MovementForm({ productId, defaultType, onSuccess }: MovementForm
 
   const { createMovement, loading } = useStockMutations()
   const { products } = useProducts()
+  const { suppliers } = useSuppliers()
+  const { createBatch, reduceBatchQuantity, loading: batchLoading } = useStockBatchMutations()
 
   const {
     register,
@@ -81,6 +84,7 @@ export function MovementForm({ productId, defaultType, onSuccess }: MovementForm
       quantity: undefined,
       unit: 'stuk',
       unit_price: null,
+      supplier_id: null,
       expiry_date: null,
       batch_number: null,
       reference: null,
@@ -132,6 +136,9 @@ export function MovementForm({ productId, defaultType, onSuccess }: MovementForm
 
   const onSubmit = async (data: MovementFormData) => {
     try {
+      const movementDirection = MOVEMENT_TYPES.find((t) => t.value === data.movement_type)?.direction
+
+      // Create the stock movement
       await createMovement({
         product_id: data.product_id,
         movement_type: data.movement_type,
@@ -139,11 +146,29 @@ export function MovementForm({ productId, defaultType, onSuccess }: MovementForm
         unit: data.unit,
         unit_price: data.unit_price || null,
         total_price: totalPrice,
+        supplier_id: data.supplier_id || null,
         expiry_date: data.expiry_date || null,
         batch_number: data.batch_number || null,
         reference: data.reference || null,
         notes: data.notes || null,
       })
+
+      // Handle batch tracking
+      if (movementDirection === 'in' && data.movement_type === 'purchase') {
+        // Create a new batch for incoming stock
+        await createBatch({
+          product_id: data.product_id,
+          quantity: data.quantity,
+          supplier_id: data.supplier_id || null,
+          expiry_date: data.expiry_date || null,
+          batch_number: data.batch_number || null,
+          unit_price: data.unit_price || null,
+          purchase_date: new Date().toISOString().split('T')[0],
+        })
+      } else if (movementDirection === 'out') {
+        // Reduce from batches using FIFO
+        await reduceBatchQuantity(data.product_id, data.quantity)
+      }
 
       toast.success('Mutatie opgeslagen')
       onSuccess?.()
@@ -279,6 +304,35 @@ export function MovementForm({ productId, defaultType, onSuccess }: MovementForm
         </CardContent>
       </Card>
 
+      {/* Supplier (only for purchase) */}
+      {selectedType === 'purchase' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Leverancier</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div>
+              <Label htmlFor="supplier_id">Van welke leverancier?</Label>
+              <Select
+                id="supplier_id"
+                {...register('supplier_id')}
+                className="mt-1"
+              >
+                <option value="">Geen leverancier geselecteerd</option>
+                {suppliers.map((supplier) => (
+                  <option key={supplier.id} value={supplier.id}>
+                    {supplier.name}
+                  </option>
+                ))}
+              </Select>
+              <p className="mt-1 text-sm text-gray-500">
+                Selecteer de leverancier om batches per leverancier bij te houden
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Price & Details */}
       <Card>
         <CardHeader>
@@ -326,7 +380,7 @@ export function MovementForm({ productId, defaultType, onSuccess }: MovementForm
             </div>
           </div>
 
-          {selectedProduct?.track_expiry && (
+          {(selectedProduct?.track_expiry || selectedType === 'purchase') && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="expiry_date">Vervaldatum</Label>
@@ -336,6 +390,11 @@ export function MovementForm({ productId, defaultType, onSuccess }: MovementForm
                   {...register('expiry_date')}
                   className="mt-1"
                 />
+                {selectedType === 'purchase' && (
+                  <p className="mt-1 text-sm text-gray-500">
+                    Belangrijk voor FIFO: oudste batch wordt eerst verkocht
+                  </p>
+                )}
               </div>
 
               <div>
@@ -368,7 +427,7 @@ export function MovementForm({ productId, defaultType, onSuccess }: MovementForm
         <Button type="button" variant="outline" onClick={() => router.back()}>
           Annuleren
         </Button>
-        <Button type="submit" loading={loading}>
+        <Button type="submit" loading={loading || batchLoading}>
           Mutatie opslaan
         </Button>
       </div>

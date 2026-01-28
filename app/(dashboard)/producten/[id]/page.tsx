@@ -4,6 +4,7 @@ import { use } from 'react'
 import { useRouter } from 'next/navigation'
 import { PageHeader } from '@/components/layout'
 import { ProductForm } from '@/components/products'
+import { BatchList } from '@/components/stock'
 import { Button, PageLoader, Card, CardContent, Badge } from '@/components/ui'
 import { useProduct, useProductMutations } from '@/hooks'
 import { formatCurrency, formatNumber, getStockStatus, getStockStatusColor } from '@/lib/utils'
@@ -148,6 +149,15 @@ export default function ProductDetailPage({ params }: Props) {
             </div>
           </Card>
         )}
+      </div>
+
+      {/* Batch Overview */}
+      <div className="mb-6">
+        <BatchList
+          productId={product.id}
+          productName={product.name}
+          productUnit={product.unit}
+        />
       </div>
 
       {/* Edit Form */}

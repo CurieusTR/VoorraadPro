@@ -48,6 +48,9 @@ export function MovementHistory({ movements }: MovementHistoryProps) {
                 Prijs
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Leverancier
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Referentie
               </th>
             </tr>
@@ -92,6 +95,9 @@ export function MovementHistory({ movements }: MovementHistoryProps) {
                     {movement.total_price
                       ? `€ ${formatNumber(Number(movement.total_price))}`
                       : '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {(movement as any).supplier?.name || '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {movement.reference || '-'}
@@ -144,6 +150,11 @@ export function MovementHistory({ movements }: MovementHistoryProps) {
                   </Badge>
                 </div>
               </div>
+              {(movement as any).supplier?.name && (
+                <p className="mt-2 text-xs text-gray-500">
+                  Leverancier: {(movement as any).supplier.name}
+                </p>
+              )}
             </div>
           )
         })}

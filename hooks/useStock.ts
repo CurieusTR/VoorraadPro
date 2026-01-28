@@ -34,7 +34,8 @@ export function useStockMovements(options: UseStockMovementsOptions = {}) {
         .select(
           `
           *,
-          product:products(id, name, unit, current_stock)
+          product:products(id, name, unit, current_stock),
+          supplier:suppliers(id, name)
         `
         )
         .order('movement_date', { ascending: false })
